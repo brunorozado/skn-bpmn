@@ -1,0 +1,8 @@
+Flask
+pandas
+scikit-learn
+networkx
+pm4py
+requests
+gunicorn
+
