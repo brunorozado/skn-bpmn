@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeador e Analisador de Processos com IA - Sankhya Integrado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="password"] {
+            font-family: monospace;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .process-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .suggestions {
+            background: #e8f5e8;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .suggestions h4 {
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .setup-instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .setup-instructions h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .setup-instructions ol {
+            padding-left: 20px;
+        }
+
+        .setup-instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .config-grid,
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Mapeador e Analisador de Processos com IA</h1>
+            <p>Solução integrada com ERP Sankhya para análise de processos em tempo real</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('config')">⚙️ Configuração</div>
+                <div class="tab" onclick="switchTab('analysis')">📊 Análise</div>
+                <div class="tab" onclick="switchTab('setup')">🛠️ Setup</div>
+            </div>
+
+            <!-- Aba de Configuração -->
+            <div id="config" class="tab-content active">
+                <div class="config-section">
+                    <h3>Configuração da API Sankhya</h3>
+                    <p>Configure as credenciais para conectar com a API Gateway do Sankhya.</p>
+                    
+                    <div class="config-grid">
+                        <div class="form-group">
+                            <label for="baseUrl">URL Base da API:</label>
+                            <input type="text" id="baseUrl" placeholder="https://api.sankhya.com.br" value="https://api.sankhya.com.br">
+                        </div>
+                        <div class="form-group">
+                            <label for="appKey">AppKey:</label>
+                            <input type="password" id="appKey" placeholder="Sua AppKey aqui">
+                        </div>
+                        <div class="form-group">
+                            <label for="sankhyaId">SankhyaID (Email):</label>
+                            <input type="email" id="sankhyaId" placeholder="seu.email@empresa.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Senha:</label>
+                            <input type="password" id="password" placeholder="Sua senha">
+                        </div>
+                        <div class="form-group">
+                            <label for="token">Token (Opcional):</label>
+                            <input type="password" id="token" placeholder="Token de acesso se disponível">
+                        </div>
+                        <div class="form-group">
+                            <label for="daysBack">Dias de Histórico:</label>
+                            <input type="number" id="daysBack" value="30" min="1" max="365">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-warning" onclick="testConnection()">🔗 Testar Conexão</button>
+                        <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configuração</button>
+                    </div>
+                    
+                    <div id="connectionStatus" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- Aba de Análise -->
+            <div id="analysis" class="tab-content">
+                <div style="margin-bottom: 20px;">
+                    <button id="analyzeBtn" class="btn btn-success" onclick="analyzeSankhyaProcesses()">
+                        🚀 Analisar Processos Sankhya
+                    </button>
+                    <p style="margin-top: 15px; color: #6c757d;">
+                        Clique no botão acima para analisar os processos do seu ERP Sankhya usando dados reais.
+                    </p>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Coletando e analisando dados do Sankhya... Isso pode levar alguns minutos.</p>
+                </div>
+
+                <div id="results" class="results-section" style="display: none;">
+                    <div class="metrics">
+                        <div class="metric">
+                            <div id="totalEvents" class="metric-value">-</div>
+                            <div class="metric-label">Total de Eventos</div>
+                        </div>
+                        <div class="metric">
+                            <div id="uniqueCases" class="metric-value">-</div>
+                            <div class="metric-label">Casos Únicos</div>
+                        </div>
+                        <div class="metric">
+                            <div id="fitnessScore" class="metric-value">-</div>
+                            <div class="metric-label">Score de Conformidade</div>
+                        </div>
+                        <div class="metric">
+                            <div id="daysAnalyzed" class="metric-value">-</div>
+                            <div class="metric-label">Dias Analisados</div>
+                        </div>
+                    </div>
+
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <h3>📊 Modelo de Processo Descoberto</h3>
+                            <div id="processImageContainer">
+                                <img id="processImage" class="process-image" style="display: none;" alt="Modelo de Processo">
+                                <div id="processPlaceholder" style="text-align: center; padding: 40px; color: #6c757d;">
+                                    Modelo de processo será exibido aqui após a análise
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <h3>💡 Sugestões de Otimização</h3>
+                            <div id="suggestionsContainer" class="suggestions">
+                                <h4>Recomendações da IA:</h4>
+                                <div id="suggestionsList">
+                                    Execute a análise para ver as sugestões personalizadas baseadas nos seus dados
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dataDetails" style="margin-top: 30px;"></div>
+                </div>
+
+                <div id="errorContainer"></div>
+            </div>
+
+            <!-- Aba de Setup -->
+            <div id="setup" class="tab-content">
+                <div class="setup-instructions">
+                    <h3>🛠️ Instruções de Setup</h3>
+                    <p>Para usar esta solução com dados reais do Sankhya, siga os passos abaixo:</p>
+                    
+                    <h4>1. Configuração do Banco de Dados</h4>
+                    <ol>
+                        <li>Execute o script SQL fornecido no seu banco de dados Sankhya</li>
+                        <li>O script criará a view <code>VW_PROCESS_MINING_EVENTS</code></li>
+                        <li>Verifique se o usuário da API tem permissões de leitura na view</li>
+                        <li>Teste a view executando: <code>SELECT COUNT(*) FROM VW_PROCESS_MINING_EVENTS</code></li>
+                    </ol>
+                    
+                    <h4>2. Configuração da API</h4>
+                    <ol>
+                        <li>Obtenha sua AppKey no portal Sankhya Developer</li>
+                        <li>Crie um SankhyaID se ainda não tiver</li>
+                        <li>Configure as permissões necessárias no usuário vinculado</li>
+                        <li>Teste a conexão na aba "Configuração"</li>
+                    </ol>
+                    
+                    <h4>3. Requisitos</h4>
+                    <ul>
+                        <li>Acesso ao banco de dados Sankhya com permissões de criação de views</li>
+                        <li>AppKey válida da API Gateway Sankhya</li>
+                        <li>SankhyaID com permissões adequadas</li>
+                        <li>Dados de transações nos últimos meses</li>
+                    </ul>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="downloadSQLScript()">📥 Baixar Script SQL</button>
+                        <button class="btn btn-warning" onclick="checkSetupStatus()">🔍 Verificar Status</button>
+                    </div>
+                    
+                    <div id="setupStatus" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Remover classe active de todas as abas
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Adicionar classe active na aba selecionada
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        async function testConnection() {
+            const config = getConfig();
+            const statusDiv = document.getElementById('connectionStatus');
+            
+            statusDiv.innerHTML = '<div class="alert alert-info"><span class="status-indicator status-info"></span>Testando conexão...</div>';
+            
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    statusDiv.innerHTML = `<div class="alert alert-success"><span class="status-indicator status-success"></span>${result.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="alert alert-error"><span class="status-indicator status-error"></span>${result.message}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert alert-error"><span class="status-indicator status-error"></span>Erro na conexão: ${error.message}</div>`;
+            }
+        }
+
+        async function analyzeSankhyaProcesses() {
+            const btn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const errorContainer = document.getElementById('errorContainer');
+            
+            // Reset UI
+            btn.disabled = true;
+            btn.textContent = '⏳ Analisando...';
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            errorContainer.innerHTML = '';
+            
+            const config = getConfig();
+            
+            try {
+                const response = await fetch('/api/analyze-sankhya', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ config: config, days_back: parseInt(document.getElementById('daysBack').value) })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Update metrics
+                    document.getElementById('totalEvents').textContent = data.data_summary.total_events || 0;
+                    document.getElementById('uniqueCases').textContent = data.data_summary.unique_cases || 0;
+                    document.getElementById('fitnessScore').textContent = Math.round(data.fitness_average * 100) + '%';
+                    document.getElementById('daysAnalyzed').textContent = data.data_period.days_analyzed || 0;
+                    
+                    // Update process image
+                    if (data.process_model_image) {
+                        const processImage = document.getElementById('processImage');
+                        processImage.src = data.process_model_image + '?t=' + Date.now();
+                        processImage.style.display = 'block';
+                        document.getElementById('processPlaceholder').style.display = 'none';
+                    }
+                    
+                    // Update suggestions
+                    const suggestionsList = document.getElementById('suggestionsList');
+                    suggestionsList.innerHTML = data.suggestions.map(suggestion => 
+                        `<div class="suggestion-item">${suggestion}</div>`
+                    ).join('');
+                    
+                    // Show data details
+                    const dataDetails = document.getElementById('dataDetails');
+                    dataDetails.innerHTML = `
+                        <div class="result-card">
+                            <h3>📈 Detalhes dos Dados</h3>
+                            <p><strong>Período analisado:</strong> ${data.data_period.start_date} até ${data.data_period.end_date}</p>
+                            <p><strong>Atividades únicas:</strong> ${data.data_summary.unique_activities}</p>
+                            <p><strong>Traces com fitness perfeito:</strong> ${data.fitness_perfect}/${data.num_traces}</p>
+                            <p><strong>Timestamp da análise:</strong> ${new Date(data.analysis_timestamp).toLocaleString()}</p>
+                        </div>
+                    `;
+                    
+                    results.style.display = 'block';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                errorContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>Erro na análise:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = '🚀 Analisar Processos Sankhya';
+            }
+        }
+
+        function getConfig() {
+            return {
+                base_url: document.getElementById('baseUrl').value,
+                app_key: document.getElementById('appKey').value,
+                sankhya_id: document.getElementById('sankhyaId').value,
+                password: document.getElementById('password').value,
+                token: document.getElementById('token').value
+            };
+        }
+
+        function saveConfig() {
+            const config = getConfig();
+            localStorage.setItem('sankhyaConfig', JSON.stringify(config));
+            alert('Configuração salva localmente!');
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem('sankhyaConfig');
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('baseUrl').value = config.base_url || '';
+                document.getElementById('appKey').value = config.app_key || '';
+                document.getElementById('sankhyaId').value = config.sankhya_id || '';
+                document.getElementById('password').value = config.password || '';
+                document.getElementById('token').value = config.token || '';
+            }
+        }
+
+        function downloadSQLScript() {
+            // Simular download do script SQL
+            const sqlContent = `-- Script SQL para criação da view VW_PROCESS_MINING_EVENTS
+-- Execute este script no seu banco de dados Sankhya
+
+CREATE OR REPLACE VIEW VW_PROCESS_MINING_EVENTS AS
+-- [Conteúdo do script seria inserido aqui]
+SELECT 'Script disponível no arquivo sankhya_database_view_design.sql' as info;`;
+            
+            const blob = new Blob([sqlContent], { type: 'text/sql' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sankhya_process_mining_view.sql';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        async function checkSetupStatus() {
+            const statusDiv = document.getElementById('setupStatus');
+            statusDiv.innerHTML = '<div class="alert alert-info">Verificando status do setup...</div>';
+            
+            try {
+                const response = await fetch('/api/database-setup');
+                const data = await response.json();
+                
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Status do Setup:</h4>
+                        <p><strong>View necessária:</strong> ${data.view_name}</p>
+                        <p><strong>Tabelas requeridas:</strong> ${data.required_tables.join(', ')}</p>
+                        <p><strong>Script SQL:</strong> ${data.sql_script_available ? 'Disponível' : 'Não disponível'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert alert-error">Erro ao verificar status: ${error.message}</div>`;
+            }
+        }
+
+        // Carregar configuração salva ao inicializar
+        window.onload = function() {
+            loadConfig();
+        };
+    </script>
+</body>
+</html>
+
